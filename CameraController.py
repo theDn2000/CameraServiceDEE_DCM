@@ -4,8 +4,9 @@ import cv2 as cv
 import paho.mqtt.client as mqtt
 import base64
 import threading
+import time
 
-local_broker_address = "127.0.0.1"
+local_broker_address = "localhost"
 local_broker_port = 1883
 sendingVideoStream = False
 
@@ -24,6 +25,7 @@ def send_video_stream(message) -> Any:
         jpg_as_text = base64.b64encode(buffer)
         # Publishing the Frame on the Topic home/server
         client.publish('cameraService/'+origin+'/videoFrame', jpg_as_text)
+        time.sleep(0.1)
     cap.release()
 
 
