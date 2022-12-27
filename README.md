@@ -15,6 +15,23 @@ We can have 4 different valid messages arriving to this module:
 - *startVideoStream*: Start a video stream of what the drone is recording
 - *stopVideoStream*: Stop the current video stream
 
+## PreCommit
+`pre-commit` is a pretty nice tool that allow us to run different actions in our code before we commit any file.
+We will use it for formatting our code, "prettify" json files, etc. To install pre-commit on our code,
+which will allow us to NOT commit the files if there is something wrong with them, we have to type on the top directory:
+
+`pre-commit install`
+
+If the pre-commit gets a little annoying, and you just want to commit files, you can deactivate it:
+
+`pre-commit uninstall`
+
+If we want to make sure that we can commit the files, and if not, why, then we need to run the following command:
+
+`pre-commit run --all-files` or `pre-commit run -a`
+
+By doing so, we ensure that, before uploading any file to GitHub, our code is well assembled.
+
 ## Example and tutorials
 
 The basics of MQTT can be found here:
