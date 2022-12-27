@@ -173,12 +173,12 @@ def direction_detector(img, send_commands, origin):
 def send_video_stream(commands, message) -> Any:
     global sending_video_stream
     cap = cv.VideoCapture(0)
-    splitted = message.split('/')
+    splitted = message.split("/")
     origin = splitted[0]
 
     while sending_video_stream:
         # Read Frame
-        topic_to_publish = f'cameraService/{origin}/videoFrame'
+        topic_to_publish = f"cameraService/{origin}/videoFrame"
         ret, frame = cap.read()
         if "circus" in origin.lower():
             if ret:
@@ -190,7 +190,7 @@ def send_video_stream(commands, message) -> Any:
                 time.sleep(0.1)
         # Encoding the Frame
         else:
-            _, image_buffer = cv.imencode('.jpg', frame)
+            _, image_buffer = cv.imencode(".jpg", frame)
             # Converting into encoded bytes
             jpg_as_text = base64.b64encode(image_buffer)
             # Publishing the Frame on the Topic home/server
@@ -202,7 +202,7 @@ def send_video_stream(commands, message) -> Any:
 def send_video_for_calibration(message):
     global sending_video_for_calibration
     cap = cv.VideoCapture(0)
-    splitted = message.split('/')
+    splitted = message.split("/")
     origin = splitted[0]
 
     while sending_video_for_calibration:
@@ -285,7 +285,7 @@ def send_video_for_calibration(message):
 
 def calibrate(frame, message):
     global hsv_values
-    splitted = message.topic.split('/')
+    splitted = message.topic.split("/")
     origin = splitted[0]
 
     hsv = cv.cvtColor(frame, cv.COLOR_BGR2HSV)
@@ -403,37 +403,43 @@ def on_message(client, userdata, message) -> Any:
     global cap
     global hsv_values
 
-    splitted = message.topic.split('/')
+    splitted = message.topic.split("/")
     origin = splitted[0]
     command = splitted[2]
 
-    if command == 'connectPlatform':
-        print('Camera service connected by ' + origin)
+    if command == "connectPlatform":
+        print("Camera service connected by " + origin)
 
         # aqui en realidad solo debería subscribirse a los comandos que llegan desde el dispositivo
         # que ordenó la conexión, pero esa información no la tiene porque el origen de este mensaje
         # es el gate. NO COSTARIA MUCHO RESOLVER ESTO. HAY QUE VER SI ES NECESARIO
 
-        client.subscribe('+/cameraService/#')
+        client.subscribe("+/cameraService/#")
 
-    if command == 'takePicture':
-        print('Take picture')
+    if command == "takePicture":
+        print("Take picture")
         cap = cv.VideoCapture(0)  # video capture source camera (Here webcam of laptop)
         for n in range(10):
             # this loop is required to discard first frames
             ret, frame = cap.read()
-            _, image_buffer = cv.imencode('.jpg', frame)
+            _, image_buffer = cv.imencode(".jpg", frame)
             # Converting into encoded bytes
             jpg_as_text = base64.b64encode(image_buffer)
-            client.publish('cameraService/' + origin + '/picture', jpg_as_text)
+            client.publish("cameraService/" + origin + "/picture", jpg_as_text)
         cap.release()
 
-    if command == 'startVideoStream':
+    if command == "startVideoStream":
         sending_video_stream = True
-        w = threading.Thread(target=send_video_stream, args=(True, message.topic,))
+        w = threading.Thread(
+            target=send_video_stream,
+            args=(
+                True,
+                message.topic,
+            ),
+        )
         w.start()
 
-    if command == 'stopVideoStream':
+    if command == "stopVideoStream":
         sending_video_stream = False
 
     if command == "set_hsv_values":
@@ -444,21 +450,39 @@ def on_message(client, userdata, message) -> Any:
         sending_video_stream = True
         # Send video stream with direction annotation
         # AND SEND commands to autopilot
-        w = threading.Thread(target=send_video_stream, args=(True, message.topic,))
+        w = threading.Thread(
+            target=send_video_stream,
+            args=(
+                True,
+                message.topic,
+            ),
+        )
         w.start()
 
     if command == "showVideoStream":
         sending_video_stream = True
         # Send video stream with direction annotation
         # BUT DO NOT send commands to autopilot
-        w = threading.Thread(target=send_video_stream, args=(False, message.topic,))
+        w = threading.Thread(
+            target=send_video_stream,
+            args=(
+                False,
+                message.topic,
+            ),
+        )
         w.start()
 
     if command == "calibrate":
         sending_video_for_calibration = False
         # take the picture to be used for calibration
         ret, frame = cap.read()
-        w = threading.Thread(target=calibrate, args=(frame,message.topic,))
+        w = threading.Thread(
+            target=calibrate,
+            args=(
+                frame,
+                message.topic,
+            ),
+        )
         w.start()
 
     if command == "startVideoForCalibration":
@@ -481,5 +505,5 @@ client = mqtt.Client("Camera service")
 client.on_message = on_message
 client.connect(local_broker_address, local_broker_port)
 client.loop_start()
-print('Waiting connection from DASH...')
-client.subscribe('gate/cameraService/connectPlatform')
+print("Waiting connection from DASH...")
+client.subscribe("gate/cameraService/connectPlatform")
