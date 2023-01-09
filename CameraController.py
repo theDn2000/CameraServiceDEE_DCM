@@ -16,6 +16,7 @@ sending_video_stream = False
 
 
 def opencv_operations(hsv, lower_colour, upper_colour):
+    mask = None
     mask = cv.inRange(hsv, lower_colour, upper_colour)
     kernel = np.ones((5, 5), np.uint8)
     mask = cv.erode(mask, kernel, iterations=5)
