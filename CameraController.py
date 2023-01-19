@@ -15,7 +15,6 @@ local_broker_port = 1883
 sending_video_stream = False
 
 
-
 def opencv_operations(hsv, lower_colour, upper_colour):
     mask = None
     mask = cv.inRange(hsv, lower_colour, upper_colour)
@@ -180,6 +179,7 @@ def send_video_stream(commands, message) -> Any:
     origin = splitted[0]
 
     while sending_video_stream:
+        # Read Frame
         # Read Frame
         topic_to_publish = f"cameraService/{origin}/videoFrame"
         ret, frame = cap.read()
