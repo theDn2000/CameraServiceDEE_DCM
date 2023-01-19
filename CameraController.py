@@ -15,6 +15,7 @@ local_broker_port = 1883
 sending_video_stream = False
 
 
+
 def opencv_operations(hsv, lower_colour, upper_colour):
     mask = None
     mask = cv.inRange(hsv, lower_colour, upper_colour)
