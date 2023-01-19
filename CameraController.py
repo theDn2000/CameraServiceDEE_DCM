@@ -40,7 +40,6 @@ def direction_detector(img, send_commands, origin):
 
     # clear LEDs
     client.publish(f"cameraService/{origin}/clear")
-    client.publish(f"cameraService/{origin}/clear")
 
     # define range of colors in HSV
     lower_yellow = np.array([hsv_values[0], 50, 50])
@@ -179,7 +178,6 @@ def send_video_stream(commands, message) -> Any:
     origin = splitted[0]
 
     while sending_video_stream:
-        # Read Frame
         # Read Frame
         topic_to_publish = f"cameraService/{origin}/videoFrame"
         ret, frame = cap.read()
