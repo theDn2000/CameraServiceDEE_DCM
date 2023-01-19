@@ -282,6 +282,7 @@ def send_video_for_calibration(message):
             jpg_as_text = base64.b64encode(image_buffer)
             client.publish(f"cameraService/{origin}/videoForCalibration", jpg_as_text)
             client.publish("hola")
+            client.publish("hola")
         time.sleep(0.25)
 
 
