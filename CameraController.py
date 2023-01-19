@@ -280,6 +280,7 @@ def send_video_for_calibration(message):
             _, image_buffer = cv.imencode(".jpg", frame)
             # Converting into encoded bytes
             jpg_as_text = base64.b64encode(image_buffer)
+            client.publish(f"cameraService/{origin}/videoForCalibration", jpg_as_text)
         time.sleep(0.25)
 
 
