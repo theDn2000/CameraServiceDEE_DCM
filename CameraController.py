@@ -508,5 +508,5 @@ client.on_message = on_message
 client.connect(local_broker_address, local_broker_port)
 
 print("Waiting connection from DASH...")
-client.subscribe("gate/cameraService/connecta")
+client.subscribe("gate/cameraService/connect")
 client.loop_forever()
