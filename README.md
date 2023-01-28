@@ -1,5 +1,4 @@
 # Camera controller
 Contribution by Miguel
 Requirements fixed by Miguel
-Contribution by others    
-
+Contribution by others
