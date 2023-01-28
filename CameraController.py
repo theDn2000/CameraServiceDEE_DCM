@@ -506,6 +506,7 @@ GWYB = False
 client = mqtt.Client("Camera service")
 client.on_message = on_message
 client.connect(local_broker_address, local_broker_port)
-client.loop_start()
+
 print("Waiting connection from DASH...")
-client.subscribe("gate/cameraService/connectPlatform")
+client.subscribe("gate/cameraService/connecta")
+client.loop_forever()
