@@ -21,4 +21,3 @@ six==1.16.0
 typing_extensions==4.4.0
 virtualenv==20.17.1
 zipp==3.12.0
-�
