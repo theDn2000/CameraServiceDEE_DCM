@@ -1,4 +1,2 @@
-# Camera controller
-Contribution by Miguel
-Requirements fixed by Miguel
-Contribution by others
+# Camera service
+
