@@ -29,8 +29,15 @@ The table bellow indicates all the commands that are accepted by the canera serv
 Command | Description | Payload | Answer | Answer payload
 --- | --- | --- | --- |--- 
 *takePicture* | provides a picture | No | *picture* | Yes (see Note 1)
-*startVideoStream* | starts sending pictures every 0.25 seconds | No | *picture* |Yes (see Note 1) 
+*startVideoStream* | starts sending pictures every 0.2 seconds | No | *picture* |Yes (see Note 1) 
 *stopVideoStream* | stop sending pictures | No | No | No 
 
 Note 1    
-Pictures are send in XXX
+Pictures are encoded in base64, as shown here:
+```
+  ret, frame = cap.read()
+  if ret:
+      _, image_buffer = cv.imencode(".jpg", frame)
+      jpg_as_text = base64.b64encode(image_buffer)
+      client.publish(topic_to_publish, jpg_as_text)
+```
