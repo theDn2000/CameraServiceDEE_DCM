@@ -103,17 +103,14 @@ def CameraService (connection_mode, operation_mode, external_broker, username, p
     # The internal broker is always (global or local mode) at localhost:1884
     internal_broker_address = "localhost"
     internal_broker_port = 1884
-
-    if connection_mode == 'global' and operation_mode == 'simulation':
+    
+    
+    if connection_mode == 'global':
         external_broker_address = external_broker
-    if connection_mode == 'global' and operation_mode == 'production':
-        external_broker_address = 'broker.hivemq.com'
-    if connection_mode == 'local':
+    else:
         external_broker_address = 'localhost'
 
     print ('External broker: ', external_broker_address)
-
-
 
     # the external broker must run always in port 8000
     external_broker_port = 8000
