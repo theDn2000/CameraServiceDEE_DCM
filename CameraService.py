@@ -12,6 +12,8 @@ import json
 from matplotlib.patches import Circle
 
 
+
+
 def send_video_stream( origin, client):
     global sending_video_stream
     global cap
@@ -52,8 +54,7 @@ def process_message(message, client):
         # Converting into encoded bytes
         jpg_as_text = base64.b64encode(image_buffer)
         client.publish("cameraService/" + origin + "/picture", jpg_as_text)
-
-
+    
     if command == "startVideoStream":
         print ('start video stream')
         sending_video_stream = True
@@ -69,6 +70,7 @@ def process_message(message, client):
     if command == "stopVideoStream":
         print ('stop video stream')
         sending_video_stream = False
+
 
 
 def on_internal_message(client, userdata, message):
@@ -89,7 +91,8 @@ def CameraService (connection_mode, operation_mode, external_broker, username, p
     global state
     global cap
 
-  sending_video_stream = False
+
+    sending_video_stream = False
 
     cap = cv.VideoCapture(0)  # video capture source camera (Here webcam of lap>
 
@@ -103,14 +106,17 @@ def CameraService (connection_mode, operation_mode, external_broker, username, p
     # The internal broker is always (global or local mode) at localhost:1884
     internal_broker_address = "localhost"
     internal_broker_port = 1884
-    
-    
+
+
     if connection_mode == 'global':
         external_broker_address = external_broker
     else:
         external_broker_address = 'localhost'
 
+
     print ('External broker: ', external_broker_address)
+
+
 
     # the external broker must run always in port 8000
     external_broker_port = 8000
@@ -135,14 +141,13 @@ def CameraService (connection_mode, operation_mode, external_broker, username, p
     internal_client.loop_start()
     external_client.loop_forever()
 
-
 if __name__ == '__main__':
     import sys
     connection_mode = sys.argv[1] # global or local
     operation_mode = sys.argv[2] # simulation or production
     username = None
     password = None
-    if connection_mode == 'global' and operation_mode == 'simulation':
+    if connection_mode == 'global':
         external_broker = sys.argv[3]
         if external_broker == 'classpip.upc.edu':
             username = sys.argv[4]
@@ -151,5 +156,3 @@ if __name__ == '__main__':
         external_broker = None
 
     CameraService(connection_mode,operation_mode, external_broker, username, password)
-
-
