@@ -1,14 +1,14 @@
-from typing import Any
+import ssl
 
 import cv2 as cv
-import numpy as np
+
 import paho.mqtt.client as mqtt
 import base64
 import threading
 import time
-import random
+
 import json
-from matplotlib.patches import Circle
+
 from ColorDetector import ColorDetector
 
 
@@ -146,7 +146,6 @@ def process_message(message, client):
         colorDetector.TomaValores()
 
     if command == "startFindingColor":
-        print("start finding color")
         finding_colors = True
         w = threading.Thread(
             target=send_video_with_colors,
@@ -170,6 +169,13 @@ def on_external_message(client, userdata, message):
     process_message(message, external_client)
 
 
+def on_connect(external_client, userdata, flags, rc):
+    if rc == 0:
+        print("Connection OK")
+    else:
+        print("Bad connection")
+
+
 def CameraService(connection_mode, operation_mode, external_broker, username, password):
     global op_mode
     global external_client
@@ -190,30 +196,71 @@ def CameraService(connection_mode, operation_mode, external_broker, username, pa
     print("Operation mode: ", operation_mode)
     op_mode = operation_mode
 
-    # The internal broker is always (global or local mode) at localhost:1884
-    internal_broker_address = "localhost"
-    internal_broker_port = 1884
+    internal_client = mqtt.Client("Autopilot_internal")
+    internal_client.on_message = on_internal_message
+    internal_client.connect("localhost", 1884)
 
-    if connection_mode == "global":
-        external_broker_address = external_broker
-    else:
-        external_broker_address = "localhost"
+    state = "disconnected"
 
-    print("External broker: ", external_broker_address)
-
-    # the external broker must run always in port 8000
-    external_broker_port = 8000
-
-    external_client = mqtt.Client("Camera_external", transport="websockets")
-    if external_broker_address == "classpip.upc.edu":
-        external_client.username_pw_set(username, password)
-
-    external_client.on_message = on_external_message
-    external_client.connect(external_broker_address, external_broker_port)
+    print("Connection mode: ", connection_mode)
+    print("Operation mode: ", operation_mode)
+    op_mode = operation_mode
 
     internal_client = mqtt.Client("Camera_internal")
     internal_client.on_message = on_internal_message
-    internal_client.connect(internal_broker_address, internal_broker_port)
+    internal_client.connect("localhost", 1884)
+
+    external_client = mqtt.Client("Camera_external", transport="websockets")
+    external_client.on_message = on_external_message
+    external_client.on_connect = on_connect
+
+    if connection_mode == "global":
+        if external_broker == "hivemq":
+            external_client.connect("broker.hivemq.com", 8000)
+            print("Connected to broker.hivemq.com:8000")
+
+        elif external_broker == "hivemq_cert":
+            external_client.tls_set(
+                ca_certs=None,
+                certfile=None,
+                keyfile=None,
+                cert_reqs=ssl.CERT_REQUIRED,
+                tls_version=ssl.PROTOCOL_TLS,
+                ciphers=None,
+            )
+            external_client.connect("broker.hivemq.com", 8884)
+            print("Connected to broker.hivemq.com:8884")
+
+        elif external_broker == "classpip_cred":
+            external_client.username_pw_set(username, password)
+            external_client.connect("classpip.upc.edu", 8000)
+            print("Connected to classpip.upc.edu:8000")
+
+        elif external_broker == "classpip_cert":
+            external_client.username_pw_set(username, password)
+            external_client.tls_set(
+                ca_certs=None,
+                certfile=None,
+                keyfile=None,
+                cert_reqs=ssl.CERT_REQUIRED,
+                tls_version=ssl.PROTOCOL_TLS,
+                ciphers=None,
+            )
+            external_client.connect("classpip.upc.edu", 8883)
+            print("Connected to classpip.upc.edu:8883")
+        elif external_broker == "localhost":
+            external_client.connect("localhost", 8000)
+            print("Connected to localhost:8000")
+        elif external_broker == "localhost_cert":
+            print("Not implemented yet")
+
+    elif connection_mode == "local":
+        if operation_mode == "simulation":
+            external_client.connect("localhost", 8000)
+            print("Connected to localhost:8000")
+        else:
+            external_client.connect("10.10.10.1", 8000)
+            print("Connected to 10.10.10.1:8000")
 
     print("Waiting....")
     external_client.subscribe("+/cameraService/#", 2)
@@ -231,7 +278,7 @@ if __name__ == "__main__":
     password = None
     if connection_mode == "global":
         external_broker = sys.argv[3]
-        if external_broker == "classpip.upc.edu":
+        if external_broker == "classpip_cred" or external_broker == "classpip_cert":
             username = sys.argv[4]
             password = sys.argv[5]
     else:
