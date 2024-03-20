@@ -1,7 +1,7 @@
 import ssl
 
-import cv2 as cv
-
+import cv2 as cv # OpenCV 
+from Camera import Camera
 import paho.mqtt.client as mqtt
 import base64
 import threading
@@ -78,28 +78,15 @@ def process_message(message, client):
     print("recibo ", command, "de ", origin)
 
     if command == "takePicture":
-        print("Take picture")
-        ret = False
-        for n in range(1, 20):
-            # this loop is required to discard first frames
-            ret, frame = cap.read()
-        _, image_buffer = cv.imencode(".jpg", frame)
-        # Converting into encoded bytes
-        jpg_as_text = base64.b64encode(image_buffer)
+
+        jpg_as_text = camera.take_picture()
         client.publish("cameraService/" + origin + "/picture", jpg_as_text)
 
     if command == "startVideoStream":
-        print("start video stream")
-        sending_video_stream = True
-        w = threading.Thread(
-            target=send_video_stream,
-            args=(origin, client),
-        )
-        w.start()
+        camera.start_video_stream(origin, client)
 
     if command == "stopVideoStream":
-        print("stop video stream")
-        sending_video_stream = False
+        camera.stop_video_stream()
 
     if command == "markFrameForCalibration":
         print("markFrameForCalibration")
@@ -109,9 +96,11 @@ def process_message(message, client):
             args=(origin, client),
         )
         w.start()
+   
     if command == "stopCalibration":
         print("stop calibration")
         sending_video_for_calibration = False
+    
     if command == "getDefaultColorValues":
         yellow, green, blueS, blueL, pink, purple = colorDetector.DameValores()
         colorsJson = {
@@ -125,6 +114,7 @@ def process_message(message, client):
         colors = json.dumps(colorsJson)
         print("envio: ", colorsJson)
         client.publish("cameraService/" + origin + "/colorValues", colors)
+  
     if command == "getColorValues":
         colorDetector.TomaValores()
         print("ya he tomado los valroe")
@@ -152,6 +142,7 @@ def process_message(message, client):
             args=(origin, client),
         )
         w.start()
+   
     if command == "stopFindingColor":
         finding_colors = False
 
@@ -269,6 +260,14 @@ def CameraService(connection_mode, operation_mode, external_broker, username, pa
     external_client.loop_forever()
 
 
+def process_output_video_stream(origin, data): # Callback function that publishes data to the broker
+    
+    topic_to_publish = f"cameraService/{origin}/videoFrame"
+    external_client.publish(topic_to_publish, data)
+    time.sleep(0.2)
+
+import cv2 as cv
+
 if __name__ == "__main__":
     import sys
 
@@ -283,5 +282,8 @@ if __name__ == "__main__":
             password = sys.argv[5]
     else:
         external_broker = None
+
+    # Create object Camera
+    camera = Camera(None)
 
     CameraService(connection_mode, operation_mode, external_broker, username, password)

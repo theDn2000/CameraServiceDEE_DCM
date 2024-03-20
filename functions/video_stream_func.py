@@ -5,8 +5,8 @@ import time
 
 
 
-def send_video_stream(self, origin, client): # Parecido a telemetry_info (hay que pasarle una función de callback)
-    topic_to_publish = f"cameraService/{origin}/videoFrame"
+def send_video_stream(self, origin, client, callback): # Parecido a telemetry_info (hay que pasarle una función de callback)
+    
 
     while self.sending_video_stream:
         # Read Frame
@@ -14,9 +14,7 @@ def send_video_stream(self, origin, client): # Parecido a telemetry_info (hay qu
         if ret:
             _, image_buffer = cv.imencode(".jpg", frame)
             jpg_as_text = base64.b64encode(image_buffer)
-            client.publish(topic_to_publish, jpg_as_text)
-            time.sleep(0.2)
-
+            callback(origin, jpg_as_text)
 
 
 def start_video_stream(self, origin, client):
